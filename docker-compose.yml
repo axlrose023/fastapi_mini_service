@@ -83,7 +83,7 @@ services:
   celery:
     <<: *backend-image
     container_name: celery
-    command: celery -A website worker -l error -Q basic_queue --hostname=celery
+    command: celery -A website worker -l error -Q basic_queue --hostname=celery --pool=prefork --concurrency=4
     volumes:
       - .:/usr/src/app/
       - back_static:/usr/src/app/allstaticfiles
