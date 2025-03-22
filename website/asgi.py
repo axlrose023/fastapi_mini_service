@@ -17,12 +17,13 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.cors import CORSMiddleware
 from fastapi_pagination import add_pagination
+from utils import exceptions as utils_exceptions
+from . import exception_handler
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "website.settings")
 django.setup()
 
-#from user.routers import api_router as user_api_router
-
+from products.routers import api_router as products_api_router
 
 def get_application() -> FastAPI:
     app = FastAPI(debug=settings.DEBUG)
@@ -34,7 +35,7 @@ def get_application() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
-    #app.include_router(user_api_router)
+    app.include_router(products_api_router)
     app.mount("/django" if settings.DEBUG else "/", get_asgi_application())
     app.mount("/media", StaticFiles(directory="media"), name="media")
 
@@ -42,7 +43,10 @@ def get_application() -> FastAPI:
         app.mount("/static", StaticFiles(directory="allstaticfiles"), name="static")
 
     add_pagination(app)
-
+    app.add_exception_handler(
+        utils_exceptions.DetailedHTTPException,
+        exception_handler.detailed_exception_handler,
+    )
     return app
 
 
